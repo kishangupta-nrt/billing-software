@@ -1843,7 +1843,7 @@ export const setDefaultAccount = (accounts, accountId) => {
 // Soft UPI VPA format check (warning-only). Allows alphanumerics, dot, hyphen,
 // underscore on either side of the @ — covers Indian VPAs like
 // "9999999999@upi", "acme.corp@hdfcbank", "merchant-1@paytm".
-export const isValidUpiId = (s) => /^[\w.\-]+@[\w.\-]+$/.test(String(s || '').trim());
+export const isValidUpiId = (s) => /^[\w.-]+@[\w.-]+$/.test(String(s || '').trim());
 
 // ========== Feature modules ==========
 // Each module can be turned off by the user in Settings → Modules. Modules in
@@ -2307,7 +2307,7 @@ export const GST_DOC_NUMBER = /^[A-Za-z0-9\-/]{1,16}$/;
 const GST_NUMBERED_TYPES = ['tax-invoice', 'credit-note'];
 export const numberFormatProblem = (settings, { nextInvoice = 1, own = false, customPrefixes = {}, fyLabel = '' } = {}) => {
   const s = { ...DEFAULT_NUMBER_SETTINGS, ...(settings || {}) };
-  if (s.format !== 'random' && !/^[\-/]$/.test(s.separator || '/')) return `The GST portal does not accept "${s.separator}" in invoice numbers. Use / or -.`;
+  if (s.format !== 'random' && !/^[/-]$/.test(s.separator || '/')) return `The GST portal does not accept "${s.separator}" in invoice numbers. Use / or -.`;
   for (const type of GST_NUMBERED_TYPES) {
     const override = own ? '' : String(customPrefixes?.[type] || '').trim();
     const sample = formatDocNumber({

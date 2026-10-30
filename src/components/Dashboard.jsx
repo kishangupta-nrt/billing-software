@@ -960,7 +960,7 @@ export default function Dashboard({ onNew, onEdit, onPrint, onDuplicate, onConve
           });
           addCanvasAsA4Pages(doc, canvas, ok > 0, safeBreaks(container.firstElementChild || container, canvas));
           ok++;
-        } catch (e) { /* skip broken bill silently */ }
+        } catch { /* skip broken bill silently */ }
         // Yield to the event loop between invoices so the browser can
         // paint the progress toast and handle any user click on Abort.
         await new Promise(r => setTimeout(r, 0));

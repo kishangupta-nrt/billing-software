@@ -25,7 +25,6 @@ function getAccentRGB() {
 }
 import {
   compareRegimes,
-  computeTax,
   parseBankStatement,
   AUTO_CATEGORY_RULES,
   DEDUCTION_CAPS,
@@ -777,7 +776,7 @@ function BankImportTab({ bankImport, setBankImport, onCommit }) {
       }
       setBankImport(parsed);
       toast(`Parsed ${parsed.transactions.length} transactions from ${parsed.bankName}`, 'success');
-    } catch (e) {
+    } catch {
       toast('Could not parse this CSV. Supported banks: SBI, HDFC, ICICI, Axis, Kotak, PNB, Yes Bank.', 'error');
     }
   };

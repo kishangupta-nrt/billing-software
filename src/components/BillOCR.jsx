@@ -1,11 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { X, Upload, Loader, Wand2, Package, Sparkles, Trash2, Plus } from 'lucide-react';
 import { toast } from './Toast';
-// v1.10.29 — Pull the installed tesseract.js version straight from its
-// package.json so that when we `npm update tesseract.js`, the CDN paths
-// track automatically. Vite handles JSON imports natively — no bundle
-// bloat beyond the version string.
-import tesseractPkg from 'tesseract.js/package.json';
 // v1.10.35 — Match extracted product names against the saved catalog
 // so users don't retype HSN + GST for products they already have.
 import { getAllProducts } from '../store';
@@ -70,7 +65,7 @@ const parseDateFrom = (text) => {
 // Invoice number: first non-blank token after "Invoice", "Bill", or "No".
 // Length ceiling (25 chars) drops paragraph-continuation false positives.
 const parseInvoiceNumber = (text) => {
-  const m = text.match(/(?:invoice|bill|inv|voucher)\s*(?:no\.?|#|number)?\s*:?\s*([A-Za-z0-9/\-]{2,25})/i);
+  const m = text.match(/(?:invoice|bill|inv|voucher)\s*(?:no\.?|#|number)?\s*:?\s*([A-Za-z0-9/-]{2,25})/i);
   return m ? m[1].trim() : '';
 };
 

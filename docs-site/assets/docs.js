@@ -28,7 +28,7 @@
     var dark = root.dataset.theme ? root.dataset.theme === 'dark'
       : window.matchMedia('(prefers-color-scheme: dark)').matches;
     root.dataset.theme = dark ? 'light' : 'dark';
-    try { localStorage.setItem('fgb-docs-theme', root.dataset.theme); } catch (e) { /* private mode */ }
+    try { localStorage.setItem('fgb-docs-theme', root.dataset.theme); } catch { /* private mode */ }
   });
 
   /* ---- copy buttons on commands ---- */

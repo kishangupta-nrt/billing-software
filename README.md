@@ -706,6 +706,7 @@ If the app saves you time, you can help keep it going:
 |----------|--------|
 | **Where is my data stored?** | In a `data/` folder on your computer as plain JSON files. No server, no cloud, no database. |
 | **Can anyone access my invoices?** | No. The app runs on `localhost` — not accessible from the internet or other computers. |
+| **Does the PIN lock protect my data?** | No. It hides the app on a shared PC. It does not encrypt files, and another program on the same computer can still read the `data/` folder or call the local API. Use separate OS user accounts or full-disk encryption for real protection. |
 | **What if I uninstall?** | Your `data/` folder stays untouched. Reinstall anytime and everything is still there. |
 | **Do I need internet?** | Only for the first install (`npm install`). After that, everything works offline. |
 | **How do I backup?** | Settings → Export Data → save JSON file. Import on any machine. |

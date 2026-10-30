@@ -15,7 +15,7 @@ import { fileURLToPath } from 'url';
 import { templateTotals, clientYearToDate, nextCounterValue, startFor, numberSeriesFor, counterKeyFor, formatDocNumber, businessKeyOf, getFinancialYearLabel, INVOICE_TYPES } from './src/utils.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const DATA_DIR = path.join(__dirname, 'data');
+const DATA_DIR = process.env.GST_DATA_DIR ? path.resolve(process.env.GST_DATA_DIR) : path.join(__dirname, 'data');
 
 // Port choice — we deliberately default to a high, unusual number rather than
 // the conventional 3001. The 3000-range is heavily used by every other Node /
@@ -27,7 +27,7 @@ const DATA_DIR = path.join(__dirname, 'data');
 // wins over this default — so a single user who genuinely needs 47371 for
 // something else can edit that file and we'll respect it forever.
 const DEFAULT_PORT = 47371;
-const PORT_FILE = path.join(__dirname, 'data', 'port.txt');
+const PORT_FILE = path.join(DATA_DIR, 'port.txt');
 
 // Read the persisted port (if any) — written once on first successful start
 // and every time we get bumped off our preferred port by EADDRINUSE.
@@ -49,7 +49,9 @@ app.disable('x-powered-by');
 // same-origin because the only legitimate framing is the app's own
 // print/PDF iframes. HSTS is only added when the request arrived over
 // HTTPS (directly or via a reverse proxy).
+const CSP = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://accounts.google.com https://apis.google.com; worker-src 'self' blob:; style-src 'self' 'unsafe-inline' http://localhost:* http://127.0.0.1:* https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob: https://*.googleusercontent.com; connect-src 'self' http://localhost:* https://accounts.google.com https://www.googleapis.com https://api.github.com https://nodejs.org https://raw.githubusercontent.com; frame-src 'self' blob: https://accounts.google.com; object-src 'none'; base-uri 'self'; frame-ancestors 'self'";
 app.use((req, res, next) => {
+  res.setHeader('Content-Security-Policy', CSP);
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'no-referrer');
@@ -141,9 +143,11 @@ const LOCAL_PREFS_ROUTE = '/api/local-prefs';
 // A full backup is bigger: every invoice keeps a copy of the business
 // profile, logo and signature images included, so a few hundred invoices
 // with a logo passed 5mb and Restore failed with "Request body too large".
+// Capped at 25mb: enough for a large real backup, without letting a crafted
+// or corrupt file buffer hundreds of megabytes in memory.
 const IMPORT_ROUTE = '/api/import';
 const jsonBody = express.json({ limit: '5mb' });
-const importBody = express.json({ limit: '500mb' });
+const importBody = express.json({ limit: '25mb' });
 app.use((req, res, next) => {
   if (req.path === LOCAL_PREFS_ROUTE) return next();
   return (req.path === IMPORT_ROUTE ? importBody : jsonBody)(req, res, next);
@@ -904,7 +908,7 @@ app.post('/api/import', (req, res) => {
 // ========================
 // Save PDF to local folder
 // ========================
-const INVOICES_DIR = path.join(__dirname, 'Saved Invoices');
+const INVOICES_DIR = process.env.GST_INVOICES_DIR ? path.resolve(process.env.GST_INVOICES_DIR) : path.join(__dirname, 'Saved Invoices');
 if (!fs.existsSync(INVOICES_DIR)) fs.mkdirSync(INVOICES_DIR, { recursive: true });
 
 app.post('/api/save-pdf', express.raw({ type: 'application/pdf', limit: '20mb' }), (req, res) => {
@@ -1051,7 +1055,7 @@ app.post('/api/saved-pdf/cancel-mark', express.json(), async (req, res) => {
 // ========================
 // Move saved PDF to Trash
 // ========================
-const TRASH_DIR = path.join(__dirname, 'Trash');
+const TRASH_DIR = process.env.GST_TRASH_DIR ? path.resolve(process.env.GST_TRASH_DIR) : path.join(__dirname, 'Trash');
 
 if (!fs.existsSync(TRASH_DIR)) fs.mkdirSync(TRASH_DIR, { recursive: true });
 

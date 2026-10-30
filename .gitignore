@@ -52,3 +52,7 @@ docs-site/out/
 # Markdown docs: only the root README is tracked
 *.md
 !/README.md
+
+# opencode custom commands
+!.opencode/command/*.md
+

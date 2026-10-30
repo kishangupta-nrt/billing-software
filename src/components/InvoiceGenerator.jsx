@@ -275,7 +275,7 @@ function SuggestingInput({ item, suggestions, onFieldChange, onSelectProduct, on
 }
 
 const LineItem = memo(function LineItem({
-  item, invoiceOptions, taxInclusive, showGST, taxLabel,
+  item, invoiceOptions, showGST, taxLabel,
   units, countryTaxRates, filterUnitsByMode, invoiceMode,
   currency, profileCountry, suggestions,
   onFieldChange, onSelectProduct, onSetProductSearch,
@@ -511,8 +511,7 @@ function fitSpacersToOnePage(container, pageWmm, pageHmm, ps) {
   const onePagePx = availH * container.getBoundingClientRect().width / availW;
   let over = container.scrollHeight - onePagePx + 3;
   const spacers = [...container.querySelectorAll('[data-pdf-spacer]')];
-  const room = spacers.reduce((s, el) => s + el.getBoundingClientRect().height, 0);
-  if (over <= 3 || over > room) return () => {};
+  if (over <= 3) return () => {};
   const undo = [];
   for (const el of spacers.reverse()) {
     if (over <= 0) break;
@@ -2365,7 +2364,6 @@ export default function InvoiceGenerator({ onBack, profile: profileProp, editing
     // (GST Rule 48) can duplicate multi-page invoices correctly.
     // v1.10.8 — Each recipe is now its own cropped image (was: one
     // shared tall image with negative-Y offsets). See M21 note above.
-    const mainImgHeight = (mainCanvas.height * pdfWidth) / mainCanvas.width;
     const pageRecipes = [];
 
     // v1.10.9 — Wire print margins. Prior code ignored `marginTop/Bottom/
@@ -2597,7 +2595,6 @@ export default function InvoiceGenerator({ onBack, profile: profileProp, editing
     //   7. Page numbers + business header on subsequent pages
     // ============================================================
     const ps = printSettings; // captured from closure below
-    const totalPages = pdf.getNumberOfPages();
 
     // ----- Multi-copy (Original / Duplicate / Triplicate) -----
     // GST Rule 48 for goods: 3 copies. For services: 2 copies.

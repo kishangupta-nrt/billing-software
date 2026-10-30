@@ -24,9 +24,13 @@ import { firefox } from 'playwright';
 import { spawn } from 'child_process';
 import { PDFDocument } from 'pdf-lib';
 import { setTimeout as sleep } from 'timers/promises';
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 
 const results = [];
 let serverProc = null;
+let smokeDir = null;
 
 const check = (name, pass, detail = '') => {
   results.push({ name, pass, detail });
@@ -36,7 +40,14 @@ const check = (name, pass, detail = '') => {
 /** Boot the app unless the caller pointed us at a running one. */
 async function startServer() {
   if (process.env.APP_URL) return process.env.APP_URL;
-  serverProc = spawn(process.execPath, ['server.js'], { stdio: ['ignore', 'pipe', 'pipe'] });
+  smokeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'fgsb-smoke-'));
+  const env = {
+    ...process.env,
+    GST_DATA_DIR: path.join(smokeDir, 'data'),
+    GST_INVOICES_DIR: path.join(smokeDir, 'Saved Invoices'),
+    GST_TRASH_DIR: path.join(smokeDir, 'Trash'),
+  };
+  serverProc = spawn(process.execPath, ['server.js'], { stdio: ['ignore', 'pipe', 'pipe'], env });
   const url = await new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('server did not report a port within 30s')), 30_000);
     serverProc.stdout.on('data', (d) => {
@@ -1593,8 +1604,15 @@ try {
     await pickStyle('Boxed grid');
     const B77 = await pdfLayout(1);
     await pickStyle('Classic');
+    const layout88 = (L) => L && {
+      onePage: L.onePage,
+      total: Math.round(L.total),
+      full: Math.round(L.fullHeight),
+      ratio: +(L.total / L.fullHeight).toFixed(3),
+      pages: (L.ends?.length || 0) + 1,
+    };
     check('v77 #88 a one-item invoice is one PDF page in Tally style and Boxed grid',
-      !!T77?.onePage && !!B77?.onePage, JSON.stringify({ tally: T77?.onePage, boxed: B77?.onePage }));
+      !!T77?.onePage && !!B77?.onePage, JSON.stringify({ tally: layout88(T77), boxed: layout88(B77) }));
 
     // #85 stock report with Excel export
     await toView77('reports');
@@ -1831,6 +1849,10 @@ try {
   }
   await browser.close();
   if (serverProc) serverProc.kill();
+  if (smokeDir) {
+    await sleep(250);
+    try { fs.rmSync(smokeDir, { recursive: true, force: true }); } catch { /* best effort */ }
+  }
 }
 
 const failed = results.filter((r) => !r.pass);
